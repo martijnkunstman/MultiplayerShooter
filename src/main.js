@@ -1,5 +1,7 @@
 import io from "socket.io-client";
 import nipplejs from 'nipplejs';
+import { Player } from './classes/Player.js';
+import * as url from './assets/spaceship.png';
 
 var options = {
   zone: document.getElementById('zone_joystick'),
@@ -39,44 +41,6 @@ manager.on('end', function () {
   ydiff = 0;
 });
 
-class Player {
-  dampening = 0.07;
-  maxSpeed = 4;
-  acceleration = {x: 0, y: 0};
-  velocity = {x: 0, y: 0};
-  position = {x: 0, y: 0};
-  id = 0;  
-  constructor(id, x, y) {
-    this.id = id;
-    this.position.x = x;
-    this.position.y = y;    
-  }
-  updateAcceleration() {
-    this.acceleration.x = xdiff;
-    this.acceleration.y = ydiff;
-  }
-  updateVelocity() {
-    this.velocity.x += this.acceleration.x;
-    this.velocity.y += this.acceleration.y;
-    // Apply damping to velocity
-    this.velocity.x *= 1 - this.dampening;
-    this.velocity.y *= 1 - this.dampening;
-  }
-  update() {
-    this.updateAcceleration();
-    this.updateVelocity();
-    // Limit velocity to max speed vector
-    let speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
-    if (speed > this.maxSpeed) {
-      this.velocity.x = (this.velocity.x / speed) * this.maxSpeed;
-      this.velocity.y = (this.velocity.y / speed) * this.maxSpeed;
-    }
-    // Apply damping to position
-    this.position.x += this.velocity.x 
-    this.position.y -= this.velocity.y;
-  }
-}
-
 let player = new Player(1, mycanvas.width/2, mycanvas.height/2);
 let nippleXY = document.getElementById("nippleXY");
 nippleXY.style.position = "absolute";
@@ -85,14 +49,23 @@ nippleXY.style.left = "0px";
 nippleXY.style.zIndex = "1";
 nippleXY.style.pointerEvents = "none"; // Disable pointer events on the canvas
 
+let spaceship = new Image();
+spaceship.src = url.default; // Load the image
 
 //game loop
 function gameLoop() { 
   nippleXY.innerHTML = "x: " + xdiff + " y: " + ydiff; 
-  player.update();
+  player.update(xdiff, ydiff);
   ctx.clearRect(0, 0, mycanvas.width, mycanvas.height); // Clear the canvas
+  //rotate the image
+  ctx.save();
+  ctx.translate(player.position.x, player.position.y);
+  ctx.rotate(Math.atan2(-player.velocity.y, player.velocity.x) + Math.PI / 2); // Rotate the canvas
+  ctx.drawImage(spaceship, -spaceship.width / 2, -spaceship.height / 2); // Draw the image at the new position
+  ctx.restore(); // Restore the canvas to its original state
+
   ctx.fillStyle = "black";
-  ctx.fillRect(player.position.x, player.position.y, 10, 10); // Draw a rectangle at the new position
+  ctx.fillRect(player.position.x-5, player.position.y-5, 10, 10); // Draw a rectangle at the new position
   requestAnimationFrame(gameLoop);
 }
 gameLoop(); // Start the game loop
