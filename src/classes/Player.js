@@ -1,14 +1,18 @@
 class Player {
-  dampening = 0.07;
+  dampening = 0.1;
   maxSpeed = 4;
   acceleration = {x: 0, y: 0};
   velocity = {x: 0, y: 0};
   position = {x: 0, y: 0};
+  width  =0;
+  height = 0;
   id = 0;  
   constructor(id, x, y) {
     this.id = id;
     this.position.x = x;
-    this.position.y = y;    
+    this.position.y = y;  
+    this.width = x * 2;
+    this.height = y * 2;
   }
   updateAcceleration(xdiff, ydiff) {
     this.acceleration.x = xdiff;
@@ -33,6 +37,11 @@ class Player {
     // Apply damping to position
     this.position.x += this.velocity.x 
     this.position.y -= this.velocity.y;
+    // Keep player within bounds of the canvas
+    if (this.position.x < 0) this.position.x = this.width;
+    if (this.position.x > this.width) this.position.x = 0;
+    if (this.position.y < 0) this.position.y = this.height; 
+    if (this.position.y > this.height) this.position.y = 0;
   }
 }
 
