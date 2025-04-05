@@ -1,6 +1,7 @@
-import io from "socket.io-client";
+
 import nipplejs from 'nipplejs';
 import { Player } from './classes/Player.js';
+import { Bullet } from './classes/Bullet.js';
 import * as url from './assets/spaceship.png';
 
 var options = {
@@ -42,6 +43,8 @@ manager.on('end', function () {
 });
 
 let player = new Player(1, mycanvas.width/2, mycanvas.height/2);
+let bullets = [];
+
 let nippleXY = document.getElementById("nippleXY");
 nippleXY.style.position = "absolute";
 nippleXY.style.top = "0px";
@@ -64,12 +67,34 @@ function gameLoop() {
   ctx.drawImage(spaceship, -spaceship.width / 2, -spaceship.height / 2); // Draw the image at the new position
   ctx.restore(); // Restore the canvas to its original state
 
+  //draw bullets
+  for (let i = 0; i < bullets.length; i++) {
+    bullets[i].move();
+    ctx.fillStyle = "red";
+    ctx.fillRect(bullets[i].x, bullets[i].y, 5, 5); // Draw a rectangle at the new position
+    // Check if the bullet is out of bounds
+    if (bullets[i].x < 0 || bullets[i].x > mycanvas.width || bullets[i].y < 0 || bullets[i].y > mycanvas.height) {
+      bullets[i].remove = true; // Mark the bullet for removal
+    }
+  }
+  console.log(bullets.length);
+  // Remove bullets that are marked for removal
+  bullets = bullets.filter(bullet => !bullet.remove);
+
   ctx.fillStyle = "black";
   ctx.fillRect(player.position.x-5, player.position.y-5, 10, 10); // Draw a rectangle at the new position
   requestAnimationFrame(gameLoop);
 }
 gameLoop(); // Start the game loop
 
+//on spacebar press shoot bullet
+document.addEventListener("keydown", function (event) {
+  if (event.code === "Space") {
+    //shoot bullet
+    let bullet = new Bullet(player.position.x, player.position.y, player.speed()+1, Math.atan2(-player.velocity.y, player.velocity.x));
+    bullets.push(bullet);
+  }
+});
 
 
 

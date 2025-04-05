@@ -25,6 +25,9 @@ class Player {
     this.velocity.x *= 1 - this.dampening;
     this.velocity.y *= 1 - this.dampening;
   }
+  speed() {
+    return Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
+  }
   update(xdiff, ydiff) {
     this.updateAcceleration(xdiff, ydiff);
     this.updateVelocity();
